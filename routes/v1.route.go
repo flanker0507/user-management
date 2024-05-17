@@ -8,24 +8,11 @@ import (
 
 func v1Route(app *fiber.App) {
 
-	v1 := app.Group("/v1")
+	user := app.Group("/users")
 
-	todo := v1.Group("/todos")
-
-	todo.Post("/", controllers.CreateTodo)
-	todo.Get("/", controllers.GetAllTodo)
-
-	todo.Get("/:id", controllers.GetTodoById)
-	todo.Patch("/:id", controllers.UpdateTodoById)
-	todo.Delete("/:id", controllers.DeleteTodoById)
-
-	v2 := app.Group("/v2")
-
-	user := v2.Group("/users")
-
-	user.Post("/", controllers.UserHandlerCreate)
+	user.Post("/register", controllers.UserHandlerCreate)
 	user.Post("/login", controllers.LoginHandler)
 	user.Get("/", middleware.AuthMiddleware, middleware.CheckAdminMiddleware, controllers.UserHandlerGetAll)
-	user.Put("/", middleware.AuthMiddleware, middleware.CheckAdminMiddleware, controllers.UpdateUserById)
-	user.Delete("/:id", controllers.DeleteUserById)
+	user.Put("/", middleware.AuthMiddleware, controllers.UpdateUserById)
+	user.Delete("/:id", middleware.AuthMiddleware, middleware.CheckAdminMiddleware, controllers.DeleteUserById)
 }

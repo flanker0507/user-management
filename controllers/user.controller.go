@@ -44,11 +44,9 @@ func UserHandlerCreate(ctx *fiber.Ctx) error {
 	}
 
 	newUser := models.User{
-		Name:    user.Name,
-		Email:   user.Email,
-		Address: user.Address,
-		Phone:   user.Phone,
-		Role:    user.Role,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
 	}
 
 	hashedPassword, err := utils.HashingPassword(user.Password)
@@ -102,8 +100,6 @@ func UpdateUserById(ctx *fiber.Ctx) error {
 	}
 	todo.Name = userReq.Name
 	todo.Email = userReq.Email
-	todo.Address = userReq.Address
-	todo.Phone = userReq.Phone
 
 	if errSave := database.DB.Save(&todo).Error; errSave != nil {
 		return ctx.Status(500).JSON(fiber.Map{

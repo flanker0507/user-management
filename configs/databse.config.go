@@ -52,7 +52,6 @@ func connectDatabase() {
 
 func runMigration() {
 	err := database.DB.AutoMigrate(
-		models.Todo{},
 		models.User{},
 	)
 	if err != nil {
