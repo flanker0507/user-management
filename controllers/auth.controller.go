@@ -1,13 +1,13 @@
-package handler
+package controllers
 
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"go-fiber-gorm/database"
-	"go-fiber-gorm/model/entity"
-	"go-fiber-gorm/model/request"
-	"go-fiber-gorm/utils"
+	"go-todo-app/database"
+	"go-todo-app/models"
+	"go-todo-app/request"
+	"go-todo-app/utils"
 	"log"
 	"time"
 )
@@ -30,7 +30,7 @@ func LoginHandler(ctx *fiber.Ctx) error {
 
 	// CHECK AVAILABLE USER
 
-	var user entity.User
+	var user models.User
 	err := database.DB.First(&user, "email = ?", loginRequest.Email).Error
 	if err != nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -48,16 +48,12 @@ func LoginHandler(ctx *fiber.Ctx) error {
 
 	// GENERATE JWT
 	claims := jwt.MapClaims{}
+	claims["id"] = user.ID
 	claims["name"] = user.Name
 	claims["email"] = user.Email
 	claims["address"] = user.Address
-	claims["exp"] = time.Now().Add(time.Minute * 2).Unix()
-
-	if user.Email == "yuda@gmail.com" {
-		claims["role"] = "admin"
-	} else {
-		claims["role"] = "user"
-	}
+	claims["role"] = user.Role
+	claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
 
 	token, errGenerateToken := utils.GenerateToken(&claims)
 	if errGenerateToken != nil {

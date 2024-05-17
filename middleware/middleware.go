@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"go-fiber-gorm/utils"
+	"go-todo-app/utils"
 )
 
 func AuthMiddleware(ctx *fiber.Ctx) error {
@@ -13,23 +13,25 @@ func AuthMiddleware(ctx *fiber.Ctx) error {
 		})
 	}
 
-	//_, err := utils.VerifyToken(token)
 	claims, err := utils.DecodeToken(token)
 	if err != nil {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "unauthenticated",
 		})
 	}
+	ctx.Locals("user_id", claims["id"])
+	ctx.Locals("role", claims["role"])
 
-	role := claims["role"].(string)
+	return ctx.Next()
+}
+
+func CheckAdminMiddleware(ctx *fiber.Ctx) error {
+	role := ctx.Locals("role")
 	if role != "admin" {
 		return ctx.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"message": "forbidden access",
 		})
 	}
-
-	//ctx.Locals("userInfo", claims)
-	//ctx.Locals("userInfo", claims["role"])
 
 	return ctx.Next()
 }
