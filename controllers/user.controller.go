@@ -76,12 +76,12 @@ func UpdateUserById(ctx *fiber.Ctx) error {
 	// PARSE REQUEST BODY
 	if errParse := ctx.BodyParser(&userReq); errParse != nil {
 		return ctx.Status(500).JSON(fiber.Map{
-			"message": "fail to parsing data",
+			"message": "fail to parse data",
 			"error":   errParse.Error(),
 		})
 	}
 
-	// VALIDATION DATA REQUEST
+	// VALIDATE REQUEST DATA
 	validate := validator.New()
 	if errValidate := validate.Struct(&userReq); errValidate != nil {
 		return ctx.Status(400).JSON(fiber.Map{
@@ -90,24 +90,27 @@ func UpdateUserById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	todoId := ctx.Locals("user_id")
+	userId := ctx.Params("id")
 	todo := models.User{}
 
-	if err := database.DB.First(&todo, "id = ?", &todoId).Error; err != nil {
+	if err := database.DB.First(&todo, "id = ?", userId).Error; err != nil {
 		return ctx.Status(404).JSON(fiber.Map{
 			"message": "user not found",
 		})
 	}
+
 	todo.Name = userReq.Name
 	todo.Email = userReq.Email
 
 	if errSave := database.DB.Save(&todo).Error; errSave != nil {
+		log.Println("Error saving user:", errSave)
 		return ctx.Status(500).JSON(fiber.Map{
 			"message": "internal server error",
 		})
 	}
+
 	return ctx.JSON(fiber.Map{
-		"message": "todo updated",
+		"message": "user updated",
 		"data":    todo,
 	})
 }

@@ -8,8 +8,8 @@ type UserCreateRequest struct {
 }
 
 type UserUpdateRequest struct {
-	Name  string `json:"name"`
-	Email string `json:"email" gorm:"unique"`
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 	Role  string `json:"role"`
 }
 
