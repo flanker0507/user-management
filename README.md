@@ -1,276 +1,151 @@
-#  User Management API
-## Introduction
 
-This documentation provides an overview and guide to the User Management CRUD API built using Go Fiber, GORM, JWT, and MySQL. The API allows for creating, reading, updating, and deleting user data, with JWT-based authentication to secure endpoints.
+# User Management App
+
+## Overview
+
+This project is a user management application built with Go using the Fiber framework and Gorm for database interaction. It supports user registration, login, and CRUD operations on user data. The application uses JWT for authentication and middleware for authorization.
 
 ## Prerequisites
 
--   Go (version 1.16 or higher)
--   MySQL (version 8.0 or higher)
--   Go Fiber
--   GORM
--   JWT
+-   Go 1.16 or later
+-   MySQL database
+-   [Go Modules](https://blog.golang.org/using-go-modules) enabled
+-   [Go Fiber](https://gofiber.io/) framework
+-   [Gorm](https://gorm.io/) ORM
 
-## Project Setup
+## Getting Started
 
-### Clone the Repository
-
-```
-git clone <repository-url>
-cd <repository-folder>
-```
-### Install Dependencies
+### Clone the repository
 
 
 ```
-go mod tidy
+git clone https://github.com/yourusername/go-user-management.git
+cd go-user-management 
 ```
 
-### Configuration
-
-Create a `.env` file in the project root and add the following configuration variables:
-
-makefile
-```
-DB_USER=<your-db-username>
-DB_PASSWORD=<your-db-password>
-DB_NAME=<your-db-name>
-DB_HOST=<your-db-host>
-DB_PORT=<your-db-port>
-JWT_SECRET=<your-jwt-secret>
-```
-
-### Database Migration
-
-Run the following command to migrate the database:
+### Install dependencies
 
 ```
-go run main.go migrate
+go mod tidy 
+```
+### Environment Variables
+
+Create a `.env` file in the root directory and configure the following environment variables:
+
+env
+
+```
+PORT=8000
+DB_NAME=user_management
+DB_USER=root
+DB_PASSWORD=root
+DB_HOST=127.0.0.1
+DB_PORT=3306
+SECRET_TOKEN=your_secret_token
+
 ```
 
-### Running the Application
+### Database Setup
+
+Ensure you have a MySQL database running and create a database named `user_management`. Update the `.env` file with your database credentials.
+
+### Run the Application
 
 
 ```
 go run main.go
+
 ```
+
+The application will start on the port specified in the `.env` file (default is 8000).
+
+## Project Structure
+
+go
+
+```
+.
+├── configs
+│   ├── app.go
+│   └── database.go
+├── controllers
+│   ├── auth_controller.go
+│   └── user_controller.go
+├── database
+│   └── database.go
+├── middleware
+│   ├── auth_middleware.go
+│   └── admin_middleware.go
+├── models
+│   └── user.go
+├── request
+│   ├── auth_request.go
+│   └── user_request.go
+├── routes
+│   ├── routes.go
+│   └── user_routes.go
+├── utils
+│   ├── hash_util.go
+│   └── jwt_util.go
+├── .env
+├── go.mod
+├── go.sum
+└── main.go
+
+```
+
+### Directory Breakdown
+
+-   `configs`: Configuration for the application and database initialization.
+-   `controllers`: Handlers for incoming HTTP requests and interaction with models.
+-   `database`: Contains the database instance.
+-   `middleware`: Middleware for request validation, authentication, and authorization.
+-   `models`: Database models and schema definitions.
+-   `request`: Request structs and validation for incoming payloads.
+-   `routes`: API route definitions.
+-   `utils`: Utility functions for password hashing and JWT management.
 
 ## API Endpoints
 
-### Authentication
+### Auth
 
-#### Register
+-   POST /users/register: Register a new user.
+-   POST /users/login: Login a user.
 
--   **Endpoint:** `/api/register`
--   **Method:** `POST`
--   **Description:** Register a new user.
--   **Request Body:**
-    
-    json
-    
+### User
+
+-   GET /users: Get all users (Admin only).
+-   PUT /users: Update user details.
+-   DELETE /users/:id: Delete user (Admin only).
+
+## Middleware
+
+-   `AuthMiddleware`: Verifies JWT and authenticates users.
+-   `CheckAdminMiddleware`: Checks if the authenticated user has admin privileges.
+
+## Running Tests
+
+You can run tests using the following command:
+
+sh
+
 ```
-  {
-      "username": "string",
-      "password": "string",
-      "email": "string"
-}
-``` 
-    
--   **Response:**
-    
-    json
-    
+go test ./...
 
--   `{
-      "message": "User registered successfully"
-    }` 
-    
+```
+## Contributing
 
-#### Login
+1.  Fork the repository
+2.  Create your feature branch (`git checkout -b feature/new-feature`)
+3.  Commit your changes (`git commit -am 'Add new feature'`)
+4.  Push to the branch (`git push origin feature/new-feature`)
+5.  Create a new Pull Request
 
--   **Endpoint:** `/api/login`
--   **Method:** `POST`
--   **Description:** Authenticate a user and generate a JWT token.
--   **Request Body:**
-    
-    json
-    
+## License
 
--   `{
-      "username": "string",
-      "password": "string"
-    }` 
-    
--   **Response:**
-    
-    json
-    
+This project is licensed under the MIT License.
+## Documentation API
 
--   `{
-      "token": "jwt-token"
-    }` 
-    
-
-### User Management
-
-#### Create User
-
--   **Endpoint:** `/api/users`
--   **Method:** `POST`
--   **Description:** Create a new user.
--   **Headers:**
-    
-    json
-    
-
--   `{
-      "Authorization": "Bearer jwt-token"
-    }` 
-    
--   **Request Body:**
-    
-    json
-    
--   `{
-      "username": "string",
-      "password": "string",
-      "email": "string"
-    }` 
-    
--   **Response:**
-    
-    json
-    
-
--   `{
-      "id": "int",
-      "username": "string",
-      "email": "string"
-    }` 
-    
-
-#### Get All Users
-
--   **Endpoint:** `/api/users`
--   **Method:** `GET`
--   **Description:** Retrieve a list of all users.
--   **Headers:**
-    
-    json
-    
-
--   `{
-      "Authorization": "Bearer jwt-token"
-    }` 
-    
--   **Response:**
-    
-    json
-    
-
--   `[
-      {
-        "id": "int",
-        "username": "string",
-        "email": "string"
-      },
-      ...
-    ]` 
-    
-
-#### Get User by ID
-
--   **Endpoint:** `/api/users/:id`
--   **Method:** `GET`
--   **Description:** Retrieve a user by ID.
--   **Headers:**
-    
-    json
-    
-
--   `{
-      "Authorization": "Bearer jwt-token"
-    }` 
-    
--   **Response:**
-    
-    json
-    
-
--   `{
-      "id": "int",
-      "username": "string",
-      "email": "string"
-    }` 
-    
-
-#### Update User
-
--   **Endpoint:** `/api/users/:id`
--   **Method:** `PUT`
--   **Description:** Update a user's information.
--   **Headers:**
-    
-    json
-    
-
--   `{
-      "Authorization": "Bearer jwt-token"
-    }` 
-    
--   **Request Body:**
-    
-    json
-    
--   `{
-      "username": "string",
-      "email": "string"
-    }` 
-    
--   **Response:**
-    
-    json
-    
-
--   `{
-      "id": "int",
-      "username": "string",
-      "email": "string"
-    }` 
-    
-
-#### Delete User
-
--   **Endpoint:** `/api/users/:id`
--   **Method:** `DELETE`
--   **Description:** Delete a user by ID.
--   **Headers:**
-    
-    json
-    
-
--   `{
-      "Authorization": "Bearer jwt-token"
-    }` 
-    
--   **Response:**
-    
-    json
-    
-
--   `{
-      "message": "User deleted successfully"
-    }` 
-    
-
-## Error Handling
-
-The API uses standard HTTP status codes to indicate the success or failure of an API request. Common status codes include:
-
--   `200 OK`: The request was successful.
--   `201 Created`: A new resource was successfully created.
--   `400 Bad Request`: The request was invalid or cannot be otherwise served.
--   `401 Unauthorized`: Authentication credentials were missing or incorrect.
--   `404 Not Found`: The requested resource could not be found.
--   `500 Internal Server Error`: An error occurred on the server.
-
+```
+https://documenter.getpostman.com/view/27917478/2sA3JT3yWo
+```
