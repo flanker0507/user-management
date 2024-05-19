@@ -12,7 +12,7 @@ import (
 
 func UserHandlerGetAll(ctx *fiber.Ctx) error {
 	var users []models.User
-	result := database.DB.Preload("Todos").Debug().Find(&users)
+	result := database.DB.Find(&users)
 	if result.Error != nil {
 		log.Println(result.Error)
 	}
@@ -91,18 +91,26 @@ func UpdateUserById(ctx *fiber.Ctx) error {
 	}
 
 	userId := ctx.Params("id")
-	todo := models.User{}
+	user := models.User{}
 
-	if err := database.DB.First(&todo, "id = ?", userId).Error; err != nil {
+	if err := database.DB.First(&user, "id = ?", userId).Error; err != nil {
 		return ctx.Status(404).JSON(fiber.Map{
 			"message": "user not found",
 		})
 	}
 
-	todo.Name = userReq.Name
-	todo.Email = userReq.Email
+	if user.Email != userReq.Email {
+		var existingUser models.User
+		if err := database.DB.Where("email = ?", userReq.Email).First(&existingUser).Error; err == nil {
+			return ctx.Status(400).JSON(fiber.Map{
+				"message": "email already exists",
+			})
+		}
+	}
+	user.Name = userReq.Name
+	user.Email = userReq.Email
 
-	if errSave := database.DB.Save(&todo).Error; errSave != nil {
+	if errSave := database.DB.Save(&user).Error; errSave != nil {
 		log.Println("Error saving user:", errSave)
 		return ctx.Status(500).JSON(fiber.Map{
 			"message": "internal server error",
@@ -111,7 +119,7 @@ func UpdateUserById(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(fiber.Map{
 		"message": "user updated",
-		"data":    todo,
+		"data":    user,
 	})
 }
 
